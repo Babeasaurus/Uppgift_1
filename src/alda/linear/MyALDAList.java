@@ -29,33 +29,25 @@ public class MyALDAList <T> implements ALDAList<T> {
 			@Override
 			public void remove(){
 				if(lastReturned != null){
-					Node<T> toRemove = null;
-					if(head.data.equals(lastReturned.data)){
-						toRemove = head;
-						head = head.next;
-						lastReturned = null;
-					}else{
-						Node<T> preToRemove = head;
-
-						for(int i = 0; i < size(); i++){
-							if(preToRemove.next != null){
-								if(preToRemove.next.data.equals(lastReturned.data)){
-									toRemove = preToRemove.next;
-									preToRemove.next = toRemove.next;
-									lastReturned = null;
-									break;
-								}else{
-									preToRemove = preToRemove.next;
-								}
-							}else{
-								break;
-							}
-						}
-					}
+					remove(head, null);
+					lastReturned = null;
 				}else{
 					throw new IllegalStateException("The item has already been removed!");
 				}
-			}	
+			}
+			private void remove(Node<T> current, Node<T> prev){
+				if(current.data.equals(lastReturned.data)){
+					if(prev == null){
+						head = head.next;
+					}else{
+						prev.next = current.next;
+					}
+				}else{
+					if(current.next != null){
+						remove(current.next, current);
+					}
+				}
+			}
 		};
 	}
 
@@ -99,37 +91,46 @@ public class MyALDAList <T> implements ALDAList<T> {
 			toRemove = head;
 			head = head.next;
 		}else{
-			Node<T> preToRemove = head;
-			for(int i = 0; i < index - 1; i++){
-				preToRemove = preToRemove.next;
-			}
-			toRemove = preToRemove.next;
-			preToRemove.next = toRemove.next;
+			toRemove = getNode(index);
+			getNode(index -1).next = toRemove.next;
 		}
 		return toRemove.data;
 	}
 
 	@Override
 	public boolean remove(T element) {
-		Iterator<T> iter = iterator();
-		while(iter.hasNext()){
-			if(iter.next() == element){
-				iter.remove();
-				return true;
+		return remove(element, head, null);
+	}
+	private boolean remove(T element, Node<T> currentNode, Node<T> prevNode){
+		if(currentNode == null){
+			return false;
+		} else if(currentNode.data.equals(element)){
+			if(prevNode == null){
+				head = currentNode.next;
+			} else{
+				prevNode.next = currentNode.next;
 			}
+			return true;
 		}
-		return false;
+		else{
+			return remove(element, currentNode.next, currentNode);
+		}
 	}
 
 	private Node<T> getNode(int index){
 		if(index < 0 || index > size() -1)
 			throw new IndexOutOfBoundsException("Index: " + index + " is not part of the list");
-		Node<T> target = head;
-		for(int i = 0; i < index; i++){
-			target = target.next;
-		}
-		return target;
+		return getNode(head, 0, index);
 	}
+	private Node<T> getNode(Node<T> currentNode, int count, int index){
+		if(currentNode == null)
+			return null;
+		else if(count == index)
+			return currentNode;
+		else
+			return getNode(currentNode.next, ++count, index);
+	}
+	
 
 	@Override
 	public T get(int index) {
@@ -150,44 +151,35 @@ public class MyALDAList <T> implements ALDAList<T> {
 
 	@Override
 	public int indexOf(T element) {
-		int count = 0;
-		Iterator<T> iter = iterator();
-		while(iter.hasNext()){
-			if(iter.next().equals(element)){
-				return count;
-			}
-			count ++;
-		}
-		return -1;
+		return indexOf(element, head, 0);
+	}
+	private int indexOf(T element, Node<T> nextNode, int nextIndex){
+		if(element.equals(nextNode.data))
+			return nextIndex;
+		else if(nextNode.next != null)
+			return indexOf(element, nextNode.next, ++nextIndex);
+		else
+			return -1;
 	}
 
 	@Override
 	public void clear() {
 		head = null;
-	}
+	}	
 
 	@Override
 	public int size() {
-		int count = 0;
-		Node<T> current = head;
-		if(head != null){
-			do{
-				current = current.next;
-				count++;
-			}while(current != null);
-		}
-		return count;
+		return countNodes(head, 0);
+	}	
+	private int countNodes(Node<T> current, int count){
+		if(current == null)
+			return count;
+		else if(current.next == null)
+			return ++count;
+		else
+			return countNodes(current.next, ++count);
 	}
-
-	private static class Node<T>{
-		T data;
-		Node<T> next;
-
-		public Node(T data){
-			this.data = data;
-		}
-	}
-
+	
 	@Override
 	public String toString() {
 		StringBuilder sr = new StringBuilder();
@@ -200,5 +192,16 @@ public class MyALDAList <T> implements ALDAList<T> {
 		sr.append("]");
 		return sr.toString();
 	}
+
+	private static class Node<T>{
+		T data;
+		Node<T> next;
+
+		public Node(T data){
+			this.data = data;
+		}
+	}
+
+	
 
 }
