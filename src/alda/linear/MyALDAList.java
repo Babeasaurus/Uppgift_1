@@ -1,3 +1,10 @@
+/**
+* Linked list for ALDA
+*
+* @author Hannes Hornvall haho2206 hornwall.hannes@gmail.com
+* @author Lotta Månsson loma3374 Mansson.lotta@gmail.com
+* @since  2015-01-23
+*/
 package alda.linear;
 
 import java.util.Iterator;
